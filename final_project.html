@@ -1,0 +1,187 @@
+<style>
+    body { padding:2.5% 10%; font-size:15px; font-family:'Arial'; }
+    header { text-align:center; font-size:300%; padding-bottom:20px; }
+    #taskmanager { table-layout:fixed; border-top:1px solid; margin-top:10px; padding-top:10px; display:table; width:100% }
+    td { border-bottom:1px solid black; padding:5px; box-sizing:border-box; }
+</style>
+
+
+
+<html>
+    <header>task manager</header>
+    <body>
+        <input type="text" id="task" placeholder="task name">
+        <select id="priority">
+            <option value="high">high</option>
+            <option value="medium">medium</option>
+            <option value="low">low</option>
+        </select>
+        <input type="checkbox" id="important"> important?
+        <button id="add">add task</button>
+
+        <div id="taskmanager">
+
+        </div>
+    </body>
+</html>
+
+
+
+<script>
+
+    /*
+        things that are unfixed / missing
+        - does not display deleted task
+        - does not properly delete tasks (deletes multiple tasks)
+        - does not display proper completion
+    */
+
+
+    // establishing variables
+    const manager = document.getElementById("taskmanager")
+    const tasks = document.getElementById("task")
+    const priority = document.getElementById("priority")
+    const importance = document.getElementById("important")
+    const submit = document.getElementById("add")
+    const complete = document.getElementsByClassName("completion")
+    const deletion = document.getElementsByClassName("deletion")
+    const trs = document.querySelectorAll("tr")
+
+    // getting values
+    function checker() {
+        if (important.checked) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    // inputs (submission, deletion, completion)
+    submit.addEventListener("click", function() {
+        userSubmission()
+    });
+
+    // assigning values to object
+
+    // DOM addition
+    function userSubmission() {
+        const task_value = tasks.value
+        const priority_value = priority.value
+        const importance_value = checker()
+
+        /*console.log(task_value)
+        console.log(priority_value)
+        console.log(importance_value)*/
+
+        // variables for DELETION and COMPLETION that are available
+
+        // JSON stuff
+        const trs = document.querySelectorAll("tr")
+        const j_obj = toJSON(trs, task_value, priority_value, importance_value)
+        const obj = JSON.parse(j_obj)
+
+        // DOM stuff
+        const row = document.createElement("tr")
+
+        const name_cell = document.createElement("td")
+        name_cell.textContent = obj.name
+        row.appendChild(name_cell)
+
+        const prio_cell = document.createElement("td")
+        prio_cell.textContent = obj.priority
+        // priority cell colors
+
+        row.appendChild(prio_cell)
+
+        const date_cell = document.createElement("td")
+        date_cell.textContent = obj.date
+        row.appendChild(date_cell)
+
+        const action_cell = document.createElement("td")
+        action_cell.innerHTML = "<input type='checkbox' class='completion' onchange='onCompletion()'> done? <button class='deletion' onclick='onDelete()'>Delete?</button>" //i know it's not recommended to use "onclick" and "onchange" but these fit the best
+        row.appendChild(action_cell)
+
+        if (obj.priority == "high") {
+            row.style.backgroundColor = "orange";
+        } if (obj.priority == "medium") {
+            row.style.backgroundColor = "yellow";
+        } if (obj.priority == "low") {
+            row.style.backgroundColor = "#88E788";
+        } if (obj.important == true) {
+            row.style.backgroundColor = "red";
+        }
+
+        manager.appendChild(row);
+
+    };
+
+    // deletion stuff
+    function onDelete() {
+
+        trs = document.getElementsByTagName("tr")
+
+        for (let i = 0; i < deletion.length; i++) {
+            if(deletion[i].onclick) {
+                trs[i].remove();
+                console.log(i);
+            }
+            // it deletes multiple objects, unsure of how to fix it
+        }
+    };
+
+    // completion stuff
+    function onCompletion() {
+        let trs = document.getElementsByTagName("tr")
+        for (let i = 0; i < complete.length; i++ ) {
+            if(complete[i].checked) {
+                trs[i].style.textDecoration = "line-through";
+            } else {
+                trs[i].style.textDecoration = "none";
+            }
+        }
+    };
+
+    // official JSON function
+    function toJSON(count, task, prio, impor) {
+        // annoying stuff for date & time
+        const dd = new Date()
+        const days = dd.getDate()
+        const months = dd.getMonth()
+        const years = dd.getFullYear()
+
+        // completion stuff
+        const length = count.length + 1;
+        /*console.log(length)
+        function comp_checker() {
+            if(length > -1) {
+                for (let i = 0; i < complete.length; i++ ) {
+                    if(complete[i].checked) {
+                        return true
+                    } else {
+                        return false
+                    }
+                }
+            } else {
+                return false
+            }
+        }
+
+        const comp = comp_checker()*/
+
+        // the creation of the object
+        const j_string = {
+            "id": length,
+            "name": task,
+            "priority": prio,
+            "important": impor,
+            "completion": true,
+            "date": months + " / " + days + " / " + years
+        }
+
+        // turning the object into a string and returning it
+        const j_obj = JSON.stringify(j_string)
+        console.log(j_obj)
+        return j_obj
+    }
+
+</script>
